@@ -1,26 +1,128 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+  Epikaizo design tokens.
+  Brand: brown #3E160C, gold #B9942C, white. Headings in Rozha One, text in Karla.
+  Everything else is a tint or shade of these, so nothing competes with the logo.
+*/
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@theme {
+  --color-brown: #3e160c;
+  --color-brown-deep: #2a0e07;
+  --color-brown-soft: #6b3a2a;
+  --color-gold: #b9942c;
+  --color-gold-deep: #8a6c1c;
+  --color-gold-light: #e8d8a6;
+  --color-sand: #faf5ec;
+  --color-sand-deep: #f1e7d5;
+  --color-ink: #2a1a14;
+  --color-muted: #6e5b52;
+  --color-line: #e6dac6;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --font-display: var(--font-rozha), "Georgia", serif;
+  --font-sans: var(--font-karla), system-ui, sans-serif;
+
+  --animate-rise: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-drift: drift 60s linear infinite;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-sway: sway 7s ease-in-out infinite alternate;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes drift {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes sway {
+    from {
+      transform: rotate(-1.5deg);
+    }
+    to {
+      transform: rotate(1.5deg);
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: #ffffff;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 1.12;
+    color: var(--color-brown);
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  /* Fieldsets default to min-content width, which lets wide rows (like the
+     menu tabs) push the page sideways on phones. */
+  fieldset {
+    min-width: 0;
+  }
+  ::selection {
+    background: var(--color-gold-light);
+    color: var(--color-brown-deep);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-gold);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+/* Elements that rise gently into view (only when JavaScript runs). */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.js .reveal[data-shown="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .js .reveal {
+    opacity: 1;
+    transform: none;
+  }
 }

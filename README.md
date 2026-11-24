@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Epikaizo Guesthouse – frontend
 
-## Getting Started
+The public website for Epikaizo Guesthouse: rooms, room booking requests,
+the restaurant menu, food ordering (room service or collection) and table
+reservations. Bookings and orders are **requests**: there are no online
+payments, and staff confirm each one.
 
-First, run the development server:
+The backend API lives in a separate repo. Until it is ready, every page runs
+on mock data.
+
+Built with Next.js 16 (App Router), TypeScript, Tailwind CSS 4, ESLint and Prettier.
+
+## Design in one paragraph
+
+The site is built around the place itself: the Ombalantu baobab, the
+cross-shaped bunker under the guesthouse, and the woven patterns of northern
+Namibian basketry. The home page sky follows the real time in Outapi (dawn,
+day, dusk or a starry night), greetings change with the hour in Oshiwambo,
+the home page stories sit on the four arms of the bunker's cross, and the
+About page has a tappable plan of the bunker. Colours are only the brand
+brown (#3E160C), gold (#B9942C) and white with their tints, headings use
+Rozha One and text uses Karla. The forms stay plain and quick: the
+playfulness is in the presentation, never in the booking steps. All motion
+switches off for visitors who ask for reduced motion.
+
+## Setup
+
+You need Node.js 20.9 or newer (`node -v` to check).
 
 ```bash
+npm install
+cp .env.example .env.local   # on Windows: copy .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Settings (`.env.local`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Name                    | What it does                                                       |
+| ----------------------- | ------------------------------------------------------------------ |
+| `API_URL`               | Base URL of the backend API, no trailing slash. Server side only.  |
+| `NEXT_PUBLIC_USE_MOCKS` | `true` uses the mock data in `src/mocks`. Set `false` for the API. |
 
-## Learn More
+## Commands
 
-To learn more about Next.js, take a look at the following resources:
+| Command             | What it does                                       |
+| ------------------- | -------------------------------------------------- |
+| `npm run dev`       | Run the site locally with live reload.             |
+| `npm run build`     | Production build (also catches most errors).       |
+| `npm start`         | Run the production build.                          |
+| `npm run lint`      | ESLint.                                            |
+| `npm run typecheck` | TypeScript check.                                  |
+| `npm run format`    | Format all files with Prettier.                    |
+| `npm run check`     | Lint, typecheck and format check. Run before a PR. |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Pages
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| URL             | Page                                                |
+| --------------- | --------------------------------------------------- |
+| `/`             | Home                                                |
+| `/about`        | About the guesthouse                                |
+| `/contact`      | Contact details                                     |
+| `/rooms`        | All rooms                                           |
+| `/rooms/[slug]` | One room                                            |
+| `/book/room`    | Room booking request (staff confirm)                |
+| `/restaurant`   | Restaurant and menu                                 |
+| `/order`        | Food order: room service or collection, open to all |
+| `/book/table`   | Table reservation, with optional food pre-order     |
+| `/events`       | Meetings & Events, with an enquiry form             |
+| `/privacy`      | Privacy policy                                      |
+| `/terms`        | Terms and conditions                                |
+| anything else   | 404 page (`src/app/not-found.tsx`)                  |
 
-## Deploy on Vercel
+All pages are placeholders until the designs and content arrive.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Where things live
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [AGENTS.md](./AGENTS.md) for the folder layout and coding conventions.

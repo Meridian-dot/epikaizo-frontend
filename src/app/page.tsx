@@ -1,69 +1,197 @@
-import Image from "next/image";
+import Link from "next/link";
+import { DishMarquee } from "@/components/DishMarquee";
+import { HomeHero } from "@/components/HomeHero";
+import { BasketMotif, BeadRow } from "@/components/Patterns";
+import { Photo } from "@/components/Photo";
+import { Reveal } from "@/components/Reveal";
+import { RoomCard } from "@/components/RoomCard";
+import { StoryCross } from "@/components/StoryCross";
+import { btn, eyebrow } from "@/components/ui";
+import { homeHighlights, storyChapters } from "@/content/site";
+import { getMenu, getPageContent, getRooms, getSettings } from "@/lib/api";
+import { formatMoneyShort, formatTime } from "@/lib/format";
 
-export default function Home() {
+export default async function HomePage() {
+  const [content, rooms, settings, menu] = await Promise.all([
+    getPageContent("home"),
+    getRooms(),
+    getSettings(),
+    getMenu(),
+  ]);
+  const highlight = homeHighlights[0];
+  const roomCount = rooms.reduce((sum, r) => sum + r.totalUnits, 0);
+  const pizza = menu
+    .flatMap((c) => c.items)
+    .find((item) => item.name.toLowerCase().startsWith("epikaizo pizza"));
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+    <>
+      <HomeHero title={content.title} body={content.body} />
+
+      {/* More than just a place to stay */}
+      <section className="mx-auto grid max-w-6xl gap-10 px-5 py-20 sm:py-28 md:grid-cols-[1fr_1.1fr] md:items-center">
+        <Reveal>
+          <p className={eyebrow}>Since 2011</p>
+          <h2 className="mt-3 text-4xl sm:text-5xl">{highlight.title}</h2>
+          <BeadRow className="mt-5" />
+          <p className="mt-5 text-lg text-muted">{highlight.body}</p>
+        </Reveal>
+        <Reveal delay={150} className="grid grid-cols-2 gap-4">
+          <Photo
+            label="The guesthouse"
+            className="aspect-[3/4] rounded-[2rem]"
+          />
+          <div className="flex flex-col gap-4 pt-10">
+            <Photo
+              label="The bunker"
+              className="aspect-square rounded-[2rem]"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <div className="rounded-[2rem] bg-brown p-5 text-white">
+              <p className="font-display text-4xl text-gold-light">
+                {roomCount}
+              </p>
+              <p className="text-sm text-white/80">
+                rooms, a restaurant and a hall, all on one historic site
+              </p>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* Four stories, laid out like the bunker */}
+      <section
+        aria-labelledby="stories-title"
+        className="relative overflow-hidden bg-sand py-20 sm:py-28"
+      >
+        <BasketMotif
+          className="absolute -top-32 -left-32 size-96 opacity-[0.06]"
+          colour="#3e160c"
+        />
+        <div className="relative mx-auto max-w-6xl px-5">
+          <Reveal className="max-w-2xl">
+            <p className={eyebrow}>Four stories, one place</p>
+            <h2 id="stories-title" className="mt-3 text-4xl sm:text-5xl">
+              Built on a cross, rooted beside a baobab
+            </h2>
+            <p className="mt-4 text-lg text-muted">
+              The guesthouse stands on an old cross-shaped bunker. Each arm of
+              the cross below holds one of our stories. Tap one to read it.
+            </p>
+          </Reveal>
+          <div className="mt-12">
+            <StoryCross chapters={storyChapters} />
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* Rooms */}
+      <section
+        aria-labelledby="rooms-title"
+        className="mx-auto max-w-6xl px-5 py-20 sm:py-28"
+      >
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <Reveal className="max-w-2xl">
+            <p className={eyebrow}>Rest easy</p>
+            <h2 id="rooms-title" className="mt-3 text-4xl sm:text-5xl">
+              A room for every kind of journey
+            </h2>
+          </Reveal>
+          <Link href="/rooms" className={btn.link}>
+            See all rooms
+          </Link>
+        </div>
+        <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {rooms.map((room, i) => (
+            <Reveal as="li" key={room.id} delay={i * 90}>
+              <RoomCard room={room} />
+            </Reveal>
+          ))}
+        </ul>
+        <p className="mt-6 text-muted">
+          Pay on arrival. No deposit, and you can cancel any time at no cost.
+          Children {settings.freeChildAgeMax} and under stay free.
+        </p>
+      </section>
+
+      {/* Restaurant */}
+      <section aria-labelledby="food-title" className="bg-brown text-white">
+        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-20 sm:py-28 md:grid-cols-2 md:items-center">
+          <Reveal>
+            <p className={`${eyebrow} text-gold-light`}>A taste of Namibia</p>
+            <h2
+              id="food-title"
+              className="mt-3 text-4xl text-white sm:text-5xl"
+            >
+              The pizza everyone in Outapi talks about
+            </h2>
+            <p className="mt-5 text-lg text-white/80">
+              A signature recipe, a loyal local following and a favourite stop
+              for travellers passing through. Next to it on the menu: eedhingu,
+              ekaka, Marathon chicken and the comforting plates of the north.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/restaurant" className={btn.gold}>
+                See the menu
+              </Link>
+              <Link href="/book/table" className={btn.outlineLight}>
+                Book a table
+              </Link>
+              <Link href="/order" className={btn.outlineLight}>
+                Order food
+              </Link>
+            </div>
+            <p className="mt-6 text-sm text-white/70">
+              Open every day, {formatTime(settings.restaurant.openingTime)} to{" "}
+              {formatTime(settings.restaurant.closingTime)}. Room service{" "}
+              {formatMoneyShort(settings.foodOrders.roomServiceFee)} extra.
+            </p>
+          </Reveal>
+          <Reveal delay={150} className="relative">
+            <Photo
+              photo={pizza?.photo}
+              label="Our signature Epikaizo pizza"
+              className="aspect-square rounded-[3rem] border-8 border-gold/30"
+            />
+            {pizza && (
+              <div className="absolute -top-4 -right-2 rounded-2xl bg-gold px-5 py-3 text-brown-deep shadow-lg sm:right-6">
+                <p className="text-xs font-bold tracking-[0.2em] uppercase">
+                  {pizza.name}
+                </p>
+                <p className="font-display text-3xl">
+                  {formatMoneyShort(pizza.price)}
+                </p>
+              </div>
+            )}
+          </Reveal>
+        </div>
+        <DishMarquee dark />
+      </section>
+
+      {/* Call to action */}
+      <section className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
+        <Reveal className="relative overflow-hidden rounded-[2.5rem] bg-sand-deep px-6 py-14 text-center sm:px-14">
+          <BasketMotif
+            className="absolute -right-24 -bottom-24 size-80 animate-drift opacity-15"
+            colour="#b9942c"
+          />
+          <p className={eyebrow}>Your stay in Outapi starts here</p>
+          <h2 className="relative mx-auto mt-3 max-w-3xl text-4xl sm:text-5xl">
+            A short stopover, a business trip or a family visit. We&apos;re
+            ready to welcome you.
+          </h2>
+          <div className="relative mt-8 flex flex-wrap justify-center gap-3">
+            <Link href="/book/room" className={btn.brown}>
+              Request a room
+            </Link>
+            <Link href="/book/table" className={btn.outlineBrown}>
+              Book a table
+            </Link>
+            <Link href="/events" className={btn.outlineBrown}>
+              Plan a meeting
+            </Link>
+          </div>
+        </Reveal>
+      </section>
+    </>
   );
 }
