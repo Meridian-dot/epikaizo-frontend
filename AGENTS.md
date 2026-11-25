@@ -73,8 +73,10 @@ src/
   branch + mock data in `src/mocks/data.ts` + types in `src/lib/types.ts`.
 - **Env vars:** add new ones to `src/lib/config.ts` and `.env.example`, and
   the README table. Values the browser needs must start with `NEXT_PUBLIC_`.
-- **Caching:** read functions in `api.ts` use `"use cache"` + `cacheLife(...)`.
-  Don't add `"use cache"` to request functions (bookings, orders).
+- **Caching:** read functions in `api.ts` are NOT cached (`cache: "no-store"`), so
+  edits saved in the admin dashboard show on the next refresh. The root layout
+  wraps the page in `<Suspense>` so this works with Cache Components. Don't add
+  `"use cache"` to request functions (bookings, orders).
 - **Server first:** pages are Server Components. Add `"use client"` only to the
   small component that needs state or event handlers (e.g. a form), not the page.
 - **Dynamic params:** `params` is a Promise. Use `PageProps<"/route">` and

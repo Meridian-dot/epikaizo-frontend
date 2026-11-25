@@ -1,11 +1,12 @@
 // The only place that talks to the backend API.
 // Every function returns mock data while NEXT_PUBLIC_USE_MOCKS is not "false".
 //
-// Paths are the PUBLIC endpoints proposed to the backend developer
-// (backend-followups.pdf). Confirm them and update them here; pages and
-// forms should not need to change.
+// Paths are the API's /public/* endpoints (epikaizo-backend, branch c/admin-api,
+// docs/api.md). If they change, update them here; pages and forms should not need to.
+//
+// Reads are NOT cached, so an edit saved in the admin dashboard shows on the
+// next page refresh. The root layout wraps the page in <Suspense> for this.
 
-import { cacheLife } from "next/cache";
 import { config } from "@/lib/config";
 import { mockContent, mockMenu, mockRooms, mockSettings } from "@/mocks/data";
 import type {
@@ -42,6 +43,7 @@ type ErrorBody = {
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${config.apiUrl}${path}`, {
+    cache: "no-store", // always fresh (see the note at the top)
     ...init,
     headers: { "Content-Type": "application/json", ...init.headers },
   });
@@ -62,18 +64,14 @@ function mockReceived(prefix: string, status: string): RequestReceived {
   return { reference: `EPK-${prefix}-${code}`, status };
 }
 
-// ---- Reads (cached; used by server components) ----
+// ---- Reads (not cached; used by server components) ----
 
 export async function getRooms(): Promise<Room[]> {
-  "use cache";
-  cacheLife("minutes");
   if (config.useMocks) return mockRooms.filter((r) => r.isActive);
   return request<Room[]>("/public/rooms");
 }
 
 export async function getRoom(slug: string): Promise<Room | null> {
-  "use cache";
-  cacheLife("minutes");
   if (config.useMocks) return mockRooms.find((r) => r.slug === slug) ?? null;
   try {
     return await request<Room>(`/public/rooms/${encodeURIComponent(slug)}`);
@@ -84,15 +82,11 @@ export async function getRoom(slug: string): Promise<Room | null> {
 }
 
 export async function getMenu(): Promise<MenuCategory[]> {
-  "use cache";
-  cacheLife("minutes");
   if (config.useMocks) return mockMenu;
   return request<MenuCategory[]>("/public/menu");
 }
 
 export async function getPageContent(key: ContentKey): Promise<PageContent> {
-  "use cache";
-  cacheLife("minutes");
   if (config.useMocks) {
     const found = mockContent.find((c) => c.key === key);
     if (!found) throw new Error(`No mock content for "${key}"`);
@@ -102,8 +96,6 @@ export async function getPageContent(key: ContentKey): Promise<PageContent> {
 }
 
 export async function getSettings(): Promise<PublicSettings> {
-  "use cache";
-  cacheLife("minutes");
   if (config.useMocks) return mockSettings;
   return request<PublicSettings>("/public/settings");
 }

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Karla, Rozha_One } from "next/font/google";
+import { Suspense, type ReactNode } from "react";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { site } from "@/content/site";
@@ -28,8 +29,22 @@ export const viewport: Viewport = {
   themeColor: "#3e160c",
 };
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
+// Header, page and footer. Data comes fresh from the API on every request
+// (see src/lib/api.ts), so this part is rendered at request time.
+async function SiteFrame({ children }: { children: ReactNode }) {
   const settings = await getSettings();
+  return (
+    <>
+      <SiteHeader phone={settings.phone} />
+      <main id="main" className="flex-1">
+        {children}
+      </main>
+      <SiteFooter settings={settings} />
+    </>
+  );
+}
+
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
@@ -51,11 +66,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to content
         </a>
-        <SiteHeader phone={settings.phone} />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        <SiteFooter settings={settings} />
+        <Suspense fallback={<main id="main" className="flex-1" />}>
+          <SiteFrame>{children}</SiteFrame>
+        </Suspense>
       </body>
     </html>
   );
