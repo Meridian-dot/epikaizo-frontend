@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { EventEnquiryForm } from "@/components/forms/EventEnquiryForm";
 import { NoSsr } from "@/components/NoSsr";
 import { PageHero } from "@/components/PageHero";
+import { PageSections } from "@/components/PageSections";
 import { BeadRow } from "@/components/Patterns";
 import { Photo } from "@/components/Photo";
 import { Reveal } from "@/components/Reveal";
 import { eyebrow } from "@/components/ui";
 import { getPageContent, getSettings } from "@/lib/api";
+import { pagePhoto, splitPageContent } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Meetings & Events",
@@ -19,13 +21,14 @@ export default async function EventsPage() {
     getPageContent("events"),
     getSettings(),
   ]);
+  const { intro, sections } = splitPageContent(content);
 
   return (
     <>
       <PageHero
         eyebrow="Meetings & Events"
         title={content.title}
-        body={content.body}
+        body={intro}
         note={{
           title: "A place to gather",
           body: "For centuries the Ombalantu baobab next door has been a place of refuge, worship and communication. A few steps away, our hall keeps that spirit of people coming together.",
@@ -34,7 +37,11 @@ export default async function EventsPage() {
 
       <section className="mx-auto grid max-w-6xl gap-10 px-5 py-16 md:grid-cols-2 md:items-center">
         <Reveal>
-          <Photo label="The hall" className="aspect-[4/3] rounded-[2rem]" />
+          <Photo
+            photo={pagePhoto(content, 0)}
+            label="The hall"
+            className="aspect-[4/3] rounded-[2rem]"
+          />
         </Reveal>
         <Reveal delay={120}>
           <p className={eyebrow}>The hall</p>
@@ -64,6 +71,8 @@ export default async function EventsPage() {
           </p>
         </Reveal>
       </section>
+
+      <PageSections sections={sections} className="pt-0 sm:pt-0" />
 
       <section aria-labelledby="enquiry-title" className="bg-sand">
         <div className="mx-auto max-w-3xl px-5 py-16">

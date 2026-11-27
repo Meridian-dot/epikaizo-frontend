@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { BunkerPlan } from "@/components/BunkerPlan";
 import { Baobab } from "@/components/Landscape";
 import { PageHero } from "@/components/PageHero";
+import { PageSections } from "@/components/PageSections";
 import { BeadRow } from "@/components/Patterns";
 import { Photo } from "@/components/Photo";
 import { Reveal } from "@/components/Reveal";
 import { eyebrow } from "@/components/ui";
-import { getPageContent } from "@/lib/api";
+import { getGallery, getPageContent } from "@/lib/api";
+import { pagePhoto, splitPageContent } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Our story",
@@ -24,19 +26,25 @@ const values = [
 ];
 
 export default async function AboutPage() {
-  const content = await getPageContent("about");
+  const [content, gallery] = await Promise.all([
+    getPageContent("about"),
+    getGallery(),
+  ]);
+  const { intro, sections } = splitPageContent(content);
 
   return (
     <>
       <PageHero
         eyebrow="Our story"
         title={content.title}
-        body={content.body}
+        body={intro}
         note={{
           title: "Since 2011",
           body: "Our doors have been open to travellers, locals and business visitors for well over a decade.",
         }}
       />
+
+      <PageSections sections={sections} className="pb-0 sm:pb-0" />
 
       <section
         id="bunker"
@@ -132,15 +140,46 @@ export default async function AboutPage() {
         </Reveal>
         <Reveal delay={120} className="grid grid-cols-2 gap-4">
           <Photo
+            photo={pagePhoto(content, 0)}
             label="Historical display"
             className="aspect-[3/4] rounded-[2rem]"
           />
           <Photo
+            photo={pagePhoto(content, 1)}
             label="The sitting room"
             className="mt-10 aspect-[3/4] rounded-[2rem]"
           />
         </Reveal>
       </section>
+
+      {gallery.length > 0 && (
+        <section
+          aria-labelledby="gallery-title"
+          className="bg-sand py-16 sm:py-24"
+        >
+          <div className="mx-auto max-w-6xl px-5">
+            <p className={eyebrow}>Gallery</p>
+            <h2 id="gallery-title" className="mt-3 text-4xl sm:text-5xl">
+              A look around
+            </h2>
+            <BeadRow className="mt-5" />
+            <ul className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3">
+              {[...gallery]
+                .sort((a, b) => a.sortOrder - b.sortOrder)
+                .map((photo, i) => (
+                  <Reveal as="li" key={photo.id} delay={(i % 3) * 80}>
+                    <Photo
+                      photo={photo}
+                      label={photo.alt}
+                      className="aspect-square rounded-3xl"
+                      sizes="(min-width: 768px) 33vw, 50vw"
+                    />
+                  </Reveal>
+                ))}
+            </ul>
+          </div>
+        </section>
+      )}
     </>
   );
 }

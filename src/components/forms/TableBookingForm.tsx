@@ -12,6 +12,7 @@ import {
   ItemPicker,
   summarise,
   type Quantities,
+  type Sides,
 } from "@/components/forms/ItemPicker";
 import { btn, field } from "@/components/ui";
 import { submitTableBooking } from "@/lib/actions";
@@ -67,6 +68,7 @@ export function TableBookingForm({
   const [notes, setNotes] = useState("");
   const [wantsFood, setWantsFood] = useState(false);
   const [quantities, setQuantities] = useState<Quantities>({});
+  const [sides, setSides] = useState<Sides>({});
   const [error, setError] = useState<string | null>(null);
   const [received, setReceived] = useState<RequestReceived | null>(null);
   const [pending, startTransition] = useTransition();
@@ -77,7 +79,11 @@ export function TableBookingForm({
   const noticeMinutes = settings.foodOrders.preOrderNoticeHours * 60;
   const canPreOrder =
     !slot || !isToday || minutesOf(slot) - now.minutesOfDay >= noticeMinutes;
-  const order = summarise(menu, wantsFood && canPreOrder ? quantities : {});
+  const order = summarise(
+    menu,
+    wantsFood && canPreOrder ? quantities : {},
+    sides,
+  );
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,6 +104,7 @@ export function TableBookingForm({
         preOrder: order.lines.map((l) => ({
           menuItemId: l.item.id,
           quantity: l.quantity,
+          ...(l.side ? { side: l.side } : {}),
         })),
       });
       if (result.ok) {
@@ -254,6 +261,8 @@ export function TableBookingForm({
                   menu={menu}
                   quantities={quantities}
                   onChange={setQuantities}
+                  sides={sides}
+                  onSidesChange={setSides}
                 />
               </div>
             ) : (
@@ -294,6 +303,7 @@ export function TableBookingForm({
                   <li key={l.item.id} className="flex justify-between gap-3">
                     <span>
                       {l.quantity} × {l.item.name}
+                      {l.side ? ` with ${l.side}` : ""}
                     </span>
                     <span>{formatMoney(l.item.price * l.quantity)}</span>
                   </li>

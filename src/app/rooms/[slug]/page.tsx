@@ -8,10 +8,15 @@ import { SetupPicker } from "@/components/SetupPicker";
 import { eyebrow } from "@/components/ui";
 import { getRoom, getRooms, getSettings } from "@/lib/api";
 import { formatTime, paragraphs } from "@/lib/format";
+import { mockRooms } from "@/mocks/data";
 
+// Pre-builds the room pages it can. If the API is asleep or unreachable at
+// build time, it uses the built-in room slugs instead (Next.js needs at least
+// one), so the build still passes and pages render on first visit.
 export async function generateStaticParams() {
-  const rooms = await getRooms();
-  return rooms.map((room) => ({ slug: room.slug }));
+  const rooms = await getRooms().catch(() => []);
+  const slugs = rooms.length > 0 ? rooms : mockRooms;
+  return slugs.map((room) => ({ slug: room.slug }));
 }
 
 export async function generateMetadata(

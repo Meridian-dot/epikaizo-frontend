@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { DishMarquee } from "@/components/DishMarquee";
 import { HomeHero } from "@/components/HomeHero";
+import { PageSections } from "@/components/PageSections";
 import { BasketMotif, BeadRow } from "@/components/Patterns";
 import { Photo } from "@/components/Photo";
 import { Reveal } from "@/components/Reveal";
@@ -9,6 +10,7 @@ import { StoryCross } from "@/components/StoryCross";
 import { btn, eyebrow } from "@/components/ui";
 import { homeHighlights, storyChapters } from "@/content/site";
 import { getMenu, getPageContent, getRooms, getSettings } from "@/lib/api";
+import { pagePhoto, splitPageContent } from "@/lib/content";
 import { formatMoneyShort, formatTime } from "@/lib/format";
 
 export default async function HomePage() {
@@ -18,6 +20,7 @@ export default async function HomePage() {
     getSettings(),
     getMenu(),
   ]);
+  const { intro, sections } = splitPageContent(content);
   const highlight = homeHighlights[0];
   const roomCount = rooms.reduce((sum, r) => sum + r.totalUnits, 0);
   const pizza = menu
@@ -26,7 +29,9 @@ export default async function HomePage() {
 
   return (
     <>
-      <HomeHero title={content.title} body={content.body} />
+      <HomeHero title={content.title} body={intro} />
+
+      <PageSections sections={sections} className="pb-0 sm:pb-0" />
 
       {/* More than just a place to stay */}
       <section className="mx-auto grid max-w-6xl gap-10 px-5 py-20 sm:py-28 md:grid-cols-[1fr_1.1fr] md:items-center">
@@ -38,11 +43,13 @@ export default async function HomePage() {
         </Reveal>
         <Reveal delay={150} className="grid grid-cols-2 gap-4">
           <Photo
+            photo={pagePhoto(content, 0)}
             label="The guesthouse"
             className="aspect-[3/4] rounded-[2rem]"
           />
           <div className="flex flex-col gap-4 pt-10">
             <Photo
+              photo={pagePhoto(content, 1)}
               label="The bunker"
               className="aspect-square rounded-[2rem]"
             />

@@ -5,8 +5,8 @@ the restaurant menu, food ordering (room service or collection) and table
 reservations. Bookings and orders are **requests**: there are no online
 payments, and staff confirm each one.
 
-The backend API lives in a separate repo. Until it is ready, every page runs
-on mock data.
+The backend API lives in a separate repo. Pages read it through `API_URL`;
+set `NEXT_PUBLIC_USE_MOCKS=true` to work on mock data instead.
 
 Built with Next.js 16 (App Router), TypeScript, Tailwind CSS 4, ESLint and Prettier.
 
@@ -37,10 +37,10 @@ Open http://localhost:3000.
 
 ## Settings (`.env.local`)
 
-| Name                    | What it does                                                       |
-| ----------------------- | ------------------------------------------------------------------ |
-| `API_URL`               | Base URL of the backend API, no trailing slash. Server side only.  |
-| `NEXT_PUBLIC_USE_MOCKS` | `true` uses the mock data in `src/mocks`. Set `false` for the API. |
+| Name                    | What it does                                                                                                               |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `API_URL`               | Base URL of the backend API, no trailing slash. Server side only.                                                          |
+| `NEXT_PUBLIC_USE_MOCKS` | Leave unset or `false` to use the real API (the default). Set `true` only to work offline on the mock data in `src/mocks`. |
 
 ## Commands
 

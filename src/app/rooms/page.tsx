@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
+import { CallUsNotice } from "@/components/CallUsNotice";
+import { PageSections } from "@/components/PageSections";
 import { BeadRow } from "@/components/Patterns";
 import { Reveal } from "@/components/Reveal";
 import { RoomCard } from "@/components/RoomCard";
 import { btn, eyebrow } from "@/components/ui";
 import { getPageContent, getRooms, getSettings } from "@/lib/api";
+import { splitPageContent } from "@/lib/content";
 import { formatMoneyShort, formatTime } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -20,30 +23,37 @@ export default async function RoomsPage() {
     getRooms(),
     getSettings(),
   ]);
+  const { intro, sections } = splitPageContent(content);
 
   return (
     <>
       <PageHero
         eyebrow="Accommodation"
         title={content.title}
-        body={content.body}
+        body={intro}
         note={{
           title: "Makalani country",
           body: "Outapi sits in the Omusati Region, where makalani palms rise over the flat, open land of the north. It is a convenient base for Outapi itself and for journeys on towards Ruacana.",
         }}
       />
 
+      <PageSections sections={sections} className="pb-0 sm:pb-0" />
+
       <section
         aria-label="Our rooms"
         className="mx-auto max-w-6xl px-5 py-16 sm:py-20"
       >
-        <ul className="grid gap-6 sm:grid-cols-2">
-          {rooms.map((room, i) => (
-            <Reveal as="li" key={room.id} delay={(i % 2) * 100}>
-              <RoomCard room={room} />
-            </Reveal>
-          ))}
-        </ul>
+        {rooms.length === 0 ? (
+          <CallUsNotice what="our rooms" settings={settings} />
+        ) : (
+          <ul className="grid gap-6 sm:grid-cols-2">
+            {rooms.map((room, i) => (
+              <Reveal as="li" key={room.id} delay={(i % 2) * 100}>
+                <RoomCard room={room} />
+              </Reveal>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="bg-sand">

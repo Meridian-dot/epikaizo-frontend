@@ -11,6 +11,7 @@ import {
   ItemPicker,
   summarise,
   type Quantities,
+  type Sides,
 } from "@/components/forms/ItemPicker";
 import { btn, field } from "@/components/ui";
 import { submitFoodOrder } from "@/lib/actions";
@@ -32,6 +33,7 @@ export function OrderForm({
   const f = settings.foodOrders;
   const [fulfilment, setFulfilment] = useState<Fulfilment>("collection");
   const [quantities, setQuantities] = useState<Quantities>({});
+  const [sides, setSides] = useState<Sides>({});
   const [roomNumber, setRoomNumber] = useState("");
   const [contact, setContact] = useState({ name: "", phone: "" });
   const [notes, setNotes] = useState("");
@@ -39,7 +41,7 @@ export function OrderForm({
   const [received, setReceived] = useState<RequestReceived | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const order = summarise(menu, quantities);
+  const order = summarise(menu, quantities, sides);
   const fee = fulfilment === "room-service" ? f.roomServiceFee : 0;
   const total = order.subtotal + fee;
 
@@ -61,6 +63,7 @@ export function OrderForm({
         items: order.lines.map((l) => ({
           menuItemId: l.item.id,
           quantity: l.quantity,
+          ...(l.side ? { side: l.side } : {}),
         })),
         guestName: contact.name.trim(),
         phone: contact.phone.trim(),
@@ -150,6 +153,8 @@ export function OrderForm({
               menu={menu}
               quantities={quantities}
               onChange={setQuantities}
+              sides={sides}
+              onSidesChange={setSides}
             />
           </div>
         </fieldset>
@@ -181,7 +186,7 @@ export function OrderForm({
             />
             <Field
               label="Notes for the kitchen (optional)"
-              hint="No onions, extra sauce, which side you want."
+              hint="No onions, extra sauce, anything else."
             >
               {(id, hint) => (
                 <textarea
@@ -211,6 +216,7 @@ export function OrderForm({
                 <li key={l.item.id} className="flex justify-between gap-3">
                   <span>
                     {l.quantity} × {l.item.name}
+                    {l.side ? ` with ${l.side}` : ""}
                   </span>
                   <span className="whitespace-nowrap">
                     {formatMoney(l.item.price * l.quantity)}

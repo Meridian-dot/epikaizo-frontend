@@ -6,6 +6,7 @@
 
 import {
   ApiError,
+  getRoomAvailability,
   placeFoodOrder,
   requestRoomBooking,
   requestTableBooking,
@@ -16,6 +17,7 @@ import type {
   EventEnquiryRequest,
   FoodOrderRequest,
   RequestReceived,
+  RoomAvailability,
   RoomBookingRequest,
   TableBookingRequest,
 } from "@/lib/types";
@@ -33,6 +35,15 @@ async function run(
   try {
     return { ok: true, received: await send() };
   } catch (error) {
+    // 404 on a request path means the API doesn't take this kind of request
+    // yet (the endpoint isn't built), not that the guest did something wrong.
+    if (error instanceof ApiError && error.status === 404) {
+      return {
+        ok: false,
+        message:
+          "We can't take this request online just yet. Please call or WhatsApp us and we'll sort it out.",
+      };
+    }
     if (error instanceof ApiError) {
       return { ok: false, message: error.message, fields: error.fields };
     }
@@ -113,4 +124,19 @@ export async function submitEventEnquiry(
     },
     () => sendEventEnquiry(data),
   );
+}
+
+// The longest stay the availability check asks about (the API allows 90 nights).
+const MAX_CHECK_NIGHTS = 90;
+
+/** Free rooms per night for the request form. null = couldn't check. */
+export async function checkRoomAvailability(
+  roomTypeId: number,
+  checkIn: string,
+  checkOut: string,
+): Promise<RoomAvailability | null> {
+  if (!isIsoDate(checkIn) || !isIsoDate(checkOut)) return null;
+  const nights = nightsBetween(checkIn, checkOut);
+  if (nights < 1 || nights > MAX_CHECK_NIGHTS) return null;
+  return getRoomAvailability(roomTypeId, checkIn, checkOut);
 }

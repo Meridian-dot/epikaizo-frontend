@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   Confirmation,
   ContactFields,
@@ -11,7 +11,7 @@ import {
 } from "@/components/forms/FormBits";
 import { BedDiagram } from "@/components/RoomVisuals";
 import { btn, field } from "@/components/ui";
-import { submitRoomBooking } from "@/lib/actions";
+import { checkRoomAvailability, submitRoomBooking } from "@/lib/actions";
 import {
   addDays,
   formatDate,
@@ -59,6 +59,43 @@ export function RoomRequestForm({
   const nights = Math.max(0, nightsBetween(checkIn, checkOut));
   const total = setup ? setup.pricePerNight * nights : 0;
   const lastDate = addDays(today, 365);
+
+  // Ask the API which nights are full whenever the room or dates change.
+  // `checkKey` names what was asked, so an old answer is never shown for new
+  // dates. If the check fails, the guest can still send the request.
+  const checkKey =
+    room && nights > 0 ? `${room.id}|${checkIn}|${checkOut}` : "";
+  const [availability, setAvailability] = useState<{
+    key: string;
+    known: boolean;
+    fullNights: string[];
+  } | null>(null);
+  useEffect(() => {
+    if (!checkKey) return;
+    let cancelled = false;
+    const [id, from, to] = checkKey.split("|");
+    checkRoomAvailability(Number(id), from, to)
+      .then((result) => {
+        if (cancelled) return;
+        setAvailability({
+          key: checkKey,
+          known: result !== null,
+          fullNights: (result?.nights ?? [])
+            .filter((n) => n.available < 1)
+            .map((n) => n.date),
+        });
+      })
+      .catch(() => {
+        if (!cancelled)
+          setAvailability({ key: checkKey, known: false, fullNights: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [checkKey]);
+  const current = availability?.key === checkKey ? availability : null;
+  const checking = Boolean(checkKey) && current === null;
+  const fullNights = current?.fullNights ?? [];
 
   const chooseRoom = (id: number) => {
     setRoomId(id);
@@ -208,6 +245,25 @@ export function RoomRequestForm({
                 />
               )}
             </Field>
+            <div aria-live="polite" className="sm:col-span-2">
+              {checking && (
+                <p className="text-sm text-muted">
+                  Checking which nights are free…
+                </p>
+              )}
+              {fullNights.length > 0 && room && (
+                <p className="rounded-2xl bg-sand-deep px-4 py-3 font-bold text-brown">
+                  Sorry, the {room.name} is fully booked on{" "}
+                  {fullNights.map(formatDate).join(", ")}. Please try other
+                  dates or another room, or call us.
+                </p>
+              )}
+              {current?.known && fullNights.length === 0 && (
+                <p className="text-sm font-bold text-gold-deep">
+                  Good news: we have rooms free for these dates.
+                </p>
+              )}
+            </div>
             <div>
               <p className={field.label}>Guests</p>
               <p className={field.hint}>
@@ -313,7 +369,7 @@ export function RoomRequestForm({
           <FormError message={error} />
           <button
             type="submit"
-            disabled={pending || nights < 1 || !setup}
+            disabled={pending || nights < 1 || !setup || fullNights.length > 0}
             className={`${btn.gold} w-full`}
           >
             {pending ? "Sending…" : "Send my request"}

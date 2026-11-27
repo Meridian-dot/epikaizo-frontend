@@ -65,6 +65,9 @@ export type MenuItem = {
   isAvailable: boolean; // false = "Not available today"
   sortOrder: number;
   photo: Photo | null;
+  // Choices the guest picks one of, e.g. ["Chips", "Rice", "Pap"]. Empty = none.
+  // Optional only so older mock data still type-checks; the API always sends it.
+  sideOptions?: string[];
 };
 
 export type MenuCategory = {
@@ -78,10 +81,31 @@ export type MenuCategory = {
 export type ContentKey =
   "home" | "about" | "contact" | "rooms" | "restaurant" | "events";
 
+// One block of page text from the dashboard's "Website text" screen.
+export type PageSection = {
+  heading: string; // may be empty
+  body: string; // plain text, a blank line starts a new paragraph
+};
+
 export type PageContent = {
   key: ContentKey;
   title: string;
-  body: string; // plain text, a blank line starts a new paragraph
+  // All section texts joined with blank lines (headings left out). Used when a
+  // page has no sections, e.g. the mock data.
+  body: string;
+  subtitle?: string; // "Line under the heading" in the dashboard
+  sections?: PageSection[];
+  // PROPOSED (Dev B, photos per page): the page's photos in order. The site
+  // fills its fixed photo spots from these; a missing one shows a placeholder.
+  photos?: Photo[];
+};
+
+// GET /rooms/:id/availability. End date exclusive, like bookings.
+export type RoomAvailability = {
+  roomTypeId: number;
+  from: IsoDate;
+  to: IsoDate;
+  nights: { date: IsoDate; available: number }[];
 };
 
 // Public settings in one object. Restaurant hours and seats are in the spec
@@ -121,6 +145,7 @@ export type PublicSettings = {
 export type OrderLineRequest = {
   menuItemId: number;
   quantity: number;
+  side?: string; // one of the item's sideOptions, when it has any
 };
 
 export type RoomBookingRequest = {

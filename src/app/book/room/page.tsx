@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { CallUsNotice } from "@/components/CallUsNotice";
 import { RoomRequestForm } from "@/components/forms/RoomRequestForm";
 import { NoSsr } from "@/components/NoSsr";
 import { PageHero } from "@/components/PageHero";
@@ -17,11 +18,15 @@ export default async function BookRoomPage() {
         body="Tell us when you're coming and how you'd like the room set up. We'll confirm by phone or email. No payment now: you pay on arrival."
       />
       <div className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
-        <Suspense fallback={<p className="text-muted">Loading the form…</p>}>
-          <NoSsr fallback={<p className="text-muted">Loading the form…</p>}>
-            <RoomRequestForm rooms={rooms} settings={settings} />
-          </NoSsr>
-        </Suspense>
+        {rooms.length === 0 ? (
+          <CallUsNotice what="our rooms" settings={settings} />
+        ) : (
+          <Suspense fallback={<p className="text-muted">Loading the form…</p>}>
+            <NoSsr fallback={<p className="text-muted">Loading the form…</p>}>
+              <RoomRequestForm rooms={rooms} settings={settings} />
+            </NoSsr>
+          </Suspense>
+        )}
       </div>
     </>
   );

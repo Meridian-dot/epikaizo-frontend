@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CallUsNotice } from "@/components/CallUsNotice";
 import { DishMarquee } from "@/components/DishMarquee";
 import { PageHero } from "@/components/PageHero";
+import { PageSections } from "@/components/PageSections";
 import { BeadRow } from "@/components/Patterns";
+import { Photo } from "@/components/Photo";
 import { Reveal } from "@/components/Reveal";
 import { btn, eyebrow } from "@/components/ui";
 import { getMenu, getPageContent, getSettings } from "@/lib/api";
+import { splitPageContent } from "@/lib/content";
 import { formatMoney, formatMoneyShort, formatTime } from "@/lib/format";
 import type { MenuItem } from "@/lib/types";
 
@@ -33,37 +37,52 @@ function slugify(name: string) {
 
 function MenuRow({ item }: { item: MenuItem }) {
   return (
-    <li className={`py-3.5 ${item.isAvailable ? "" : "opacity-55"}`}>
-      <div className="flex items-baseline gap-3">
-        <span className="font-bold text-brown">{item.name}</span>
-        <span
-          aria-hidden="true"
-          className="flex-1 border-b-2 border-dotted border-gold/50"
+    <li className={`flex gap-4 py-3.5 ${item.isAvailable ? "" : "opacity-55"}`}>
+      {item.photo && (
+        <Photo
+          photo={item.photo}
+          label={item.name}
+          className="size-20 shrink-0 rounded-2xl"
+          sizes="80px"
         />
-        <span className="font-display text-lg whitespace-nowrap text-brown">
-          {formatMoney(item.price)}
-        </span>
-      </div>
-      {(item.description ||
-        item.dietaryTags.length > 0 ||
-        !item.isAvailable) && (
-        <p className="mt-1 text-sm text-muted">
-          {!item.isAvailable && (
-            <span className="mr-2 rounded-full bg-brown px-2 py-0.5 text-xs font-bold text-white">
-              Not available today
-            </span>
-          )}
-          {item.description}
-          {item.dietaryTags.map((t) => (
-            <span
-              key={t}
-              className="ml-2 rounded-full bg-sand-deep px-2 py-0.5 text-xs font-bold text-gold-deep"
-            >
-              {tagLabel[t] ?? t}
-            </span>
-          ))}
-        </p>
       )}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-3">
+          <span className="font-bold text-brown">{item.name}</span>
+          <span
+            aria-hidden="true"
+            className="flex-1 border-b-2 border-dotted border-gold/50"
+          />
+          <span className="font-display text-lg whitespace-nowrap text-brown">
+            {formatMoney(item.price)}
+          </span>
+        </div>
+        {(item.description ||
+          item.dietaryTags.length > 0 ||
+          !item.isAvailable) && (
+          <p className="mt-1 text-sm text-muted">
+            {!item.isAvailable && (
+              <span className="mr-2 rounded-full bg-brown px-2 py-0.5 text-xs font-bold text-white">
+                Not available today
+              </span>
+            )}
+            {item.description}
+            {item.dietaryTags.map((t) => (
+              <span
+                key={t}
+                className="ml-2 rounded-full bg-sand-deep px-2 py-0.5 text-xs font-bold text-gold-deep"
+              >
+                {tagLabel[t] ?? t}
+              </span>
+            ))}
+          </p>
+        )}
+        {(item.sideOptions?.length ?? 0) > 0 && (
+          <p className="mt-1 text-sm text-muted">
+            With {item.sideOptions?.join(", ").replace(/, ([^,]*)$/, " or $1")}
+          </p>
+        )}
+      </div>
     </li>
   );
 }
@@ -80,13 +99,14 @@ export default async function RestaurantPage() {
   );
   const r = settings.restaurant;
   const f = settings.foodOrders;
+  const { intro, sections } = splitPageContent(content);
 
   return (
     <>
       <PageHero
         eyebrow="Epikaizo Restaurant"
         title={content.title}
-        body={content.body}
+        body={intro}
         note={{
           title: "Oshifima on the table",
           body: "In the north, a meal often means stiff porridge made from mahangu, with a stew or spinach beside it. On our menu you will find pap, ekaka and eedhingu alongside the steaks and pizza.",
@@ -103,6 +123,8 @@ export default async function RestaurantPage() {
       </PageHero>
 
       <DishMarquee />
+
+      <PageSections sections={sections} />
 
       <section className="mx-auto grid max-w-6xl gap-6 px-5 py-14 sm:grid-cols-3">
         {[
@@ -163,6 +185,11 @@ export default async function RestaurantPage() {
           The full menu
         </h2>
         <BeadRow className="mt-4" />
+        {categories.length === 0 && (
+          <div className="mt-8">
+            <CallUsNotice what="the menu" settings={settings} />
+          </div>
+        )}
         <nav
           aria-label="Menu sections"
           className="sticky top-[7.5rem] z-10 -mx-5 mt-6 overflow-x-auto bg-white/95 px-5 py-3 backdrop-blur"

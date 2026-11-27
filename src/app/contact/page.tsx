@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
+import { PageSections } from "@/components/PageSections";
 import { Reveal } from "@/components/Reveal";
 import { btn } from "@/components/ui";
 import { getPageContent, getSettings } from "@/lib/api";
+import { splitPageContent } from "@/lib/content";
 import { formatMoneyShort, formatTime } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -18,6 +20,7 @@ export default async function ContactPage() {
   ]);
   const tel = s.phone.replace(/\s/g, "");
   const wa = s.whatsapp.replace(/\D/g, "");
+  const { intro, sections } = splitPageContent(content);
 
   const ways = [
     {
@@ -28,7 +31,7 @@ export default async function ContactPage() {
     },
     {
       title: "WhatsApp",
-      detail: s.phone,
+      detail: s.whatsapp,
       href: `https://wa.me/${wa}`,
       action: "Open WhatsApp",
     },
@@ -68,7 +71,7 @@ export default async function ContactPage() {
 
   return (
     <>
-      <PageHero eyebrow="Contact" title={content.title} body={content.body} />
+      <PageHero eyebrow="Contact" title={content.title} body={intro} />
 
       <section className="mx-auto max-w-6xl px-5 py-16">
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -90,6 +93,8 @@ export default async function ContactPage() {
           ))}
         </ul>
       </section>
+
+      <PageSections sections={sections} className="pt-0 sm:pt-0" />
 
       <section className="bg-sand">
         <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 lg:grid-cols-2">
